@@ -1,13 +1,18 @@
-from seed import *
+#!/usr/bin/python3
+import sys
+from itertools import islice
 
-if __name__ == "__main__":
-    conn = connect_db()
-    create_database(conn)
-    conn.close()
-    prodev_conn = connect_to_prodev()
-    if prodev_conn:
-        print("🎉 Connection test successful!")
-    create_table(prodev_conn)
-    insert_data(prodev_conn, "user_data.csv")
-    prodev_conn.close()
-    print("🎉 Data seeding complete!")
+# Import the module
+processing = __import__('1-batch_processing')
+
+##### Print processed users in a batch of 50
+try:
+    # Get the generator function from the module
+    batch_gen = getattr(processing, 'batch_processing')
+
+    # Iterate over the generator and print each user
+    for user in islice(batch_gen(50), 10):  # limit to first 10 for readability
+        print(user)
+
+except BrokenPipeError:
+    sys.stderr.close()
