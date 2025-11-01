@@ -42,7 +42,3 @@ def compute_average_age():
     print(f"Average age of users: {average_age:.2f}")
 
     return average_age
-
-
-if __name__ == "__main__":
-    compute_average_age()
