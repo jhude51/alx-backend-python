@@ -1,42 +1,35 @@
+#!/usr/bin/python3
+"""
+Lazily loads paginated user data from the database using a generator.
+Each page is fetched only when needed, starting at offset 0.
+"""
 import psycopg2
+from psycopg2.extras import RealDictCursor
+seed = __import__('seed')
+
 
 def paginate_users(page_size, offset):
     """
-    Fetches a single page of users from the database based on page size and offset.
-    Returns a list of tuples.
+    Fetches a single page of users from the user_data table.
+    Uses LIMIT and OFFSET for pagination.
     """
-    connection = psycopg2.connect(
-        dbname="ALX_prodev",
-        user="postgres",
-        password="S3M0V!T@",
-        host="localhost",
-        port="5432"
-    )
-
-    try:
-        with connection.cursor() as cursor:
-            query = """
-            SELECT user_id, name, email, age
-            FROM user_data
-            ORDER BY created_at ASC
-            LIMIT %s OFFSET %s;
-            """
-            cursor.execute(query, (page_size, offset))
-            result = cursor.fetchall()
-            return result
-    finally:
-        connection.close()
+    connection = seed.connect_to_prodev()
+    cursor = connection.cursor(cursor_factory=RealDictCursor)
+    cursor.execute(f"SELECT * FROM user_data LIMIT {page_size} OFFSET {offset}")
+    rows = cursor.fetchall()
+    connection.close()
+    return [dict(row) for row in rows]
 
 
 def lazy_paginate(page_size):
     """
-    Generator that lazily fetches paginated user data from the database.
-    Uses only one loop and fetches the next page only when needed.
+    Generator function that lazily fetches paginated user data from the database.
+    Only fetches the next page when needed.
     """
     offset = 0
-    while True:  
+    while True: 
         page = paginate_users(page_size, offset)
         if not page:
             break
-        yield page  
+        yield page
         offset += page_size 
