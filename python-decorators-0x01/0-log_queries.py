@@ -1,5 +1,6 @@
 import sqlite3
 import functools
+from datetime import datetime
 
 #### decorator to log SQL queries
 
@@ -12,12 +13,12 @@ def log_queries(func):
         # Get the SQL query
         sql_query = kwargs.get("query") if "query" in kwargs else (args[0] if args else None)
 
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if isinstance(sql_query, str):
-            print(f"[LOG] Executing query in {func.__name__}: {sql_query}")
+            print(f"[{timestamp}] Executing query in {func.__name__}: {sql_query}")
         else:
-            print(f"[LOG] Calling {func.__name__} (no SQL query detected)")
+            print(f"[{timestamp}] Calling {func.__name__} (no SQL query detected)")
 
-        # Execute the wrapped function
         return func(*args, **kwargs)
 
     return wrapper
